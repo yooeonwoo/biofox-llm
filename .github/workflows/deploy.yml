@@ -2,7 +2,7 @@ name: Deploy to DigitalOcean
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, main ]
   workflow_dispatch:
 
 jobs:
@@ -21,12 +21,15 @@ jobs:
     - name: Deploy to server
       run: |
         ssh -o StrictHostKeyChecking=no root@${{ secrets.DROPLET_IP }} << 'EOF'
+          set -e
           cd /opt/anythingllm
-          git pull origin master
+          git fetch --all
+          git reset --hard HEAD
+          git pull
           cd docker
-          docker-compose down
-          docker-compose pull
-          docker-compose up -d
+          docker compose down || true
+          docker compose pull
+          docker compose up -d
         EOF
 
     - name: Verify deployment
