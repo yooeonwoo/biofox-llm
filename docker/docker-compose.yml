@@ -16,15 +16,15 @@ services:
     cap_add:
       - SYS_ADMIN
     volumes:
-      - "./.env:/app/server/.env"
+      # - "./.env:/app/server/.env"  # Coolify handles env vars differently
       - "../server/storage:/app/server/storage"
       - "../collector/hotdir/:/app/collector/hotdir"
       - "../collector/outputs/:/app/collector/outputs"
     user: "${UID:-1000}:${GID:-1000}"
     ports:
       - "3001:3001"
-    env_file:
-      - .env
+    # env_file:
+    #   - .env  # Coolify handles env vars through its UI
     networks:
       - anything-llm
     extra_hosts:
