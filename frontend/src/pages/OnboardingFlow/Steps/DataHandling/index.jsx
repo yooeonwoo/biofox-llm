@@ -307,7 +307,7 @@ export const VECTOR_DB_PRIVACY = {
   lancedb: {
     name: "LanceDB",
     description: [
-      "Your vectors and document text are stored privately on this instance of AnythingLLM",
+      "Your vectors and document text are stored privately on this instance of BIOFOX Chat",
     ],
     logo: LanceDbLogo,
   },
@@ -315,9 +315,9 @@ export const VECTOR_DB_PRIVACY = {
 
 export const EMBEDDING_ENGINE_PRIVACY = {
   native: {
-    name: "AnythingLLM Embedder",
+    name: "BIOFOX Chat Embedder",
     description: [
-      "Your document text is embedded privately on this instance of AnythingLLM",
+      "Your document text is embedded privately on this instance of BIOFOX Chat",
     ],
     logo: AnythingLLMIcon,
   },
@@ -407,21 +407,21 @@ export const FALLBACKS = {
   LLM: (provider) => ({
     name: "Unknown",
     description: [
-      `"${provider}" has no known data handling policy defined in AnythingLLM`,
+      `"${provider}" has no known data handling policy defined in BIOFOX Chat`,
     ],
     logo: AnythingLLMIcon,
   }),
   EMBEDDING: (provider) => ({
     name: "Unknown",
     description: [
-      `"${provider}" has no known data handling policy defined in AnythingLLM`,
+      `"${provider}" has no known data handling policy defined in BIOFOX Chat`,
     ],
     logo: AnythingLLMIcon,
   }),
   VECTOR: (provider) => ({
     name: "Unknown",
     description: [
-      `"${provider}" has no known data handling policy defined in AnythingLLM`,
+      `"${provider}" has no known data handling policy defined in BIOFOX Chat`,
     ],
     logo: AnythingLLMIcon,
   }),
