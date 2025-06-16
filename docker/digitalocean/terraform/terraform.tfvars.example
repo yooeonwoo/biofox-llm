@@ -1,0 +1,11 @@
+# DigitalOcean API token
+do_token = "your-digitalocean-api-token"
+
+# OpenAI API key
+openai_key = "your-openai-api-key"
+
+# Optional: customize these values
+region = "sgp1"  # Singapore
+ssh_pub_path = "~/.ssh/id_ed25519.pub"
+llm_provider = "openai"
+openai_model = "o4-mini"

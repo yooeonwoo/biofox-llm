@@ -1,0 +1,36 @@
+name: Deploy to DigitalOcean
+
+on:
+  push:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Setup SSH
+      uses: webfactory/ssh-agent@v0.8.0
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+    - name: Deploy to server
+      run: |
+        ssh -o StrictHostKeyChecking=no root@${{ secrets.DROPLET_IP }} << 'EOF'
+          cd /opt/anythingllm
+          git pull origin master
+          cd docker
+          docker-compose down
+          docker-compose pull
+          docker-compose up -d
+        EOF
+
+    - name: Verify deployment
+      run: |
+        sleep 30
+        curl -f http://${{ secrets.DROPLET_IP }}:3001 || exit 1
+        echo "Deployment successful!"
