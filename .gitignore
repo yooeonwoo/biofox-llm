@@ -10,3 +10,9 @@ aws_cf_deploy_anything_llm.json
 yarn.lock
 *.bak
 .idea
+
+# Terraform
+docker/digitalocean/terraform/.terraform/
+*.tfstate*
+
+docker/digitalocean/terraform/terraform.tfvars
