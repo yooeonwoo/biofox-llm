@@ -60,8 +60,9 @@ export default function UserRow({ currUser, user }) {
         className="bg-transparent text-white text-opacity-80 text-xs font-medium border-b border-white/10 h-10"
       >
         <th scope="row" className="px-6 whitespace-nowrap">
-          {user.username}
+          {user.id}
         </th>
+        <td className="px-6">{user.username}</td>
         <td className="px-6">{titleCase(user.role)}</td>
         <td className="px-6">{user.createdAt}</td>
         <td className="px-6 flex items-center gap-x-6 h-full mt-2">

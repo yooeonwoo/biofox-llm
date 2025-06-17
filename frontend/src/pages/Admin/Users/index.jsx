@@ -88,6 +88,9 @@ function UsersContainer() {
       <thead className="text-theme-text-secondary text-xs leading-[18px] font-bold uppercase border-white/10 border-b">
         <tr>
           <th scope="col" className="px-6 py-3 rounded-tl-lg">
+            User ID
+          </th>
+          <th scope="col" className="px-6 py-3">
             Username
           </th>
           <th scope="col" className="px-6 py-3">

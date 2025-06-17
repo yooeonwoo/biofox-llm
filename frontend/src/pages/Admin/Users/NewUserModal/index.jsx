@@ -11,6 +11,7 @@ export default function NewUserModal({ closeModal }) {
     enabled: false,
     limit: 10,
   });
+  const [enableMem0, setEnableMem0] = useState(true);
 
   const handleCreate = async (e) => {
     setError(null);
@@ -19,6 +20,7 @@ export default function NewUserModal({ closeModal }) {
     const form = new FormData(e.target);
     for (var [key, value] of form.entries()) data[key] = value;
     data.dailyMessageLimit = messageLimit.enabled ? messageLimit.limit : null;
+    data.enable_mem0 = enableMem0;
 
     const { user, error } = await Admin.newUser(data);
     if (!!user) window.location.reload();
@@ -131,6 +133,27 @@ export default function NewUserModal({ closeModal }) {
                 limit={messageLimit.limit}
                 updateState={setMessageLimit}
               />
+              <div className="mt-4 mb-8">
+                <div className="flex flex-col gap-y-1">
+                  <div className="flex items-center gap-x-2">
+                    <h2 className="text-base leading-6 font-bold text-white">
+                      Enable Mem0 Memory
+                    </h2>
+                    <label className="relative inline-flex cursor-pointer items-center">
+                      <input
+                        type="checkbox"
+                        checked={enableMem0}
+                        onChange={(e) => setEnableMem0(e.target.checked)}
+                        className="peer sr-only"
+                      />
+                      <div className="pointer-events-none peer h-6 w-11 rounded-full bg-[#CFCFD0] after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:shadow-xl after:border-none after:bg-white after:box-shadow-md after:transition-all after:content-[''] peer-checked:bg-[#32D583] peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-transparent"></div>
+                    </label>
+                  </div>
+                  <p className="text-xs leading-[18px] font-base text-white/60">
+                    Allow this user to use Mem0 memory system for personalized conversation history and context.
+                  </p>
+                </div>
+              </div>
               {error && <p className="text-red-400 text-sm">Error: {error}</p>}
               <p className="text-white text-xs md:text-sm">
                 After creating a user they will need to login with their initial

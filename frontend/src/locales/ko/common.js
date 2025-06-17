@@ -96,17 +96,12 @@ const TRANSLATIONS = {
   },
   login: {
     "multi-user": {
-      welcome: "웰컴!",
       "placeholder-username": "사용자 이름",
       "placeholder-password": "비밀번호",
       login: "로그인",
       validating: "유효성 검사 중...",
       "forgot-pass": "비밀번호를 잊으셨나요",
       reset: "재설정",
-    },
-    "sign-in": {
-      start: "사용자 계정으로 ",
-      end: "에 로그인하세요.",
     },
     "password-reset": {
       title: "비밀번호 재설정",
