@@ -133,10 +133,11 @@ FROM build AS frontend-build
 COPY --chown=anythingllm:anythingllm ./frontend /app/frontend/
 WORKDIR /app/frontend
 RUN yarn install --network-timeout 100000 && yarn cache clean
-# FIXED: Simplified build process - just run yarn build without the complex copy operations
-RUN yarn build
-# Verify the build output
-RUN ls -la /app/frontend/dist/ && echo "Frontend build completed successfully"
+RUN yarn build && \
+    cp -r dist /tmp/frontend-build && \
+    rm -rf * && \
+    cp -r /tmp/frontend-build dist && \
+    rm -rf /tmp/frontend-build
 WORKDIR /app
 
 # Install server layer
@@ -159,11 +160,7 @@ USER anythingllm
 # Since we are building from backend-build we just need to move built frontend into server/public
 FROM backend-build AS production-build
 WORKDIR /app
-# FIXED: Make sure the target directory exists before copying
-RUN mkdir -p /app/server/public
 COPY --chown=anythingllm:anythingllm --from=frontend-build /app/frontend/dist /app/server/public
-# Verify the copy was successful
-RUN ls -la /app/server/public/ && echo "Frontend assets copied to server/public successfully"
 USER root
 RUN chown -R anythingllm:anythingllm /app/server && \
     chown -R anythingllm:anythingllm /app/collector
