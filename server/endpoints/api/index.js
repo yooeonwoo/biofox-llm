@@ -6,6 +6,7 @@ const { apiSystemEndpoints } = require("./system");
 const { apiWorkspaceEndpoints } = require("./workspace");
 const { apiWorkspaceThreadEndpoints } = require("./workspaceThread");
 const { apiUserManagementEndpoints } = require("./userManagement");
+const { apiUserMemoryEndpoints } = require("./userMemory");
 const { apiOpenAICompatibleEndpoints } = require("./openai");
 const { apiEmbedEndpoints } = require("./embed");
 
@@ -22,6 +23,7 @@ function developerEndpoints(app, router) {
   apiDocumentEndpoints(router);
   apiWorkspaceThreadEndpoints(router);
   apiUserManagementEndpoints(router);
+  apiUserMemoryEndpoints(router);
   apiOpenAICompatibleEndpoints(router);
   apiEmbedEndpoints(router);
 }

@@ -48,6 +48,8 @@ const {
   resetPassword,
   generateRecoveryCodes,
 } = require("../utils/PasswordRecovery");
+const { searchMemory, shouldUseMem0 } = require("../utils/memoryProvider");
+const axios = require("axios");
 const { SlashCommandPresets } = require("../models/slashCommandsPresets");
 const { EncryptionManager } = require("../utils/EncryptionManager");
 const { BrowserExtensionApiKey } = require("../models/browserExtensionApiKey");
@@ -1383,6 +1385,153 @@ function systemEndpoints(app) {
       }
     }
   );
+
+  // User Memory Management Endpoints
+  app.get("/user/memories", [validatedRequest], async (request, response) => {
+    try {
+      const user = await userFromSession(request, response);
+      if (!user) {
+        return response.status(401).json({ error: "Invalid auth token provided." });
+      }
+
+      if (!shouldUseMem0(user)) {
+        return response.status(403).json({ error: "Mem0 not enabled for this user." });
+      }
+
+      const BASE_URL = process.env.MEM0_ENDPOINT;
+      const API_KEY = process.env.MEM0_API_KEY;
+      
+      if (!BASE_URL || !API_KEY) {
+        return response.status(500).json({ error: "Mem0 not configured" });
+      }
+
+      try {
+        const { data } = await axios.get(
+          `${BASE_URL.replace(/\/$/, "")}/memories`,
+          { 
+            params: { user_id: String(user.id) },
+            headers: { Authorization: `Bearer ${API_KEY}` }
+          }
+        );
+        response.status(200).json({ memories: data || [] });
+      } catch (err) {
+        console.error("[mem0] getAllUserMemories error", err?.message || err);
+        response.status(500).json({ error: "Failed to fetch memories" });
+      }
+    } catch (e) {
+      console.error(e.message, e);
+      response.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.delete("/user/memories/:memoryId", [validatedRequest], async (request, response) => {
+    try {
+      const user = await userFromSession(request, response);
+      if (!user) {
+        return response.status(401).json({ error: "Invalid auth token provided." });
+      }
+
+      if (!shouldUseMem0(user)) {
+        return response.status(403).json({ error: "Mem0 not enabled for this user." });
+      }
+
+      const BASE_URL = process.env.MEM0_ENDPOINT;
+      const API_KEY = process.env.MEM0_API_KEY;
+      
+      if (!BASE_URL || !API_KEY) {
+        return response.status(500).json({ error: "Mem0 not configured" });
+      }
+
+      const { memoryId } = request.params;
+      
+      try {
+        await axios.delete(
+          `${BASE_URL.replace(/\/$/, "")}/memories/${memoryId}`,
+          { headers: { Authorization: `Bearer ${API_KEY}` } }
+        );
+        
+        response.status(200).json({ 
+          success: true, 
+          message: "Memory deleted successfully" 
+        });
+      } catch (err) {
+        console.error("[mem0] deleteUserMemory error", err?.message || err);
+        response.status(500).json({ 
+          error: "Failed to delete memory" 
+        });
+      }
+    } catch (e) {
+      console.error(e.message, e);
+      response.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.delete("/user/memories", [validatedRequest], async (request, response) => {
+    try {
+      const user = await userFromSession(request, response);
+      if (!user) {
+        return response.status(401).json({ error: "Invalid auth token provided." });
+      }
+
+      if (!shouldUseMem0(user)) {
+        return response.status(403).json({ error: "Mem0 not enabled for this user." });
+      }
+
+      const BASE_URL = process.env.MEM0_ENDPOINT;
+      const API_KEY = process.env.MEM0_API_KEY;
+      
+      if (!BASE_URL || !API_KEY) {
+        return response.status(500).json({ error: "Mem0 not configured" });
+      }
+
+      try {
+        await axios.delete(
+          `${BASE_URL.replace(/\/$/, "")}/memories`,
+          { 
+            params: { user_id: String(user.id) },
+            headers: { Authorization: `Bearer ${API_KEY}` }
+          }
+        );
+        
+        response.status(200).json({ 
+          success: true, 
+          message: "All memories deleted successfully" 
+        });
+      } catch (err) {
+        console.error("[mem0] deleteAllUserMemories error", err?.message || err);
+        response.status(500).json({ 
+          error: "Failed to delete all memories" 
+        });
+      }
+    } catch (e) {
+      console.error(e.message, e);
+      response.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/user/memories/search", [validatedRequest], async (request, response) => {
+    try {
+      const user = await userFromSession(request, response);
+      if (!user) {
+        return response.status(401).json({ error: "Invalid auth token provided." });
+      }
+
+      if (!shouldUseMem0(user)) {
+        return response.status(403).json({ error: "Mem0 not enabled for this user." });
+      }
+
+      const { query, limit = 10 } = reqBody(request);
+      if (!query) {
+        return response.status(400).json({ error: "Query is required" });
+      }
+
+      const results = await searchMemory(user.id, query, limit);
+      response.status(200).json({ results });
+    } catch (e) {
+      console.error(e.message, e);
+      response.status(500).json({ error: "Internal server error" });
+    }
+  });
 }
 
 module.exports = { systemEndpoints };
