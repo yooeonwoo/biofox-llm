@@ -18,7 +18,7 @@ export default function Main() {
   return (
     <div className="w-screen h-screen overflow-hidden bg-theme-bg-container flex">
       {!isMobile ? <Sidebar /> : <SidebarMobileHeader />}
-      {!!user && user?.role !== "admin" ? <DefaultChatContainer /> : <Home />}
+      <Home />
     </div>
   );
 }

@@ -12,12 +12,21 @@ if (BASE_URL && !/^https?:\/\//.test(BASE_URL)) {
 
 const headers = API_KEY ? { Authorization: `Bearer ${API_KEY}` } : {};
 
-async function addMemory(userId = 0, messages = []) {
+// Create composite user ID for workspace-level memory isolation
+function createMemoryUserId(userId, workspaceId) {
+  return `u${userId}_w${workspaceId}`;
+}
+
+async function addMemory(userId = 0, workspaceId = null, messages = []) {
   if (!BASE_URL || !API_KEY) return; // mem0 not configured – noop
+  
+  // Use composite ID if workspace is provided, otherwise fallback to user-only
+  const memoryUserId = workspaceId ? createMemoryUserId(userId, workspaceId) : String(userId);
+  
   try {
     await axios.post(
       `${BASE_URL.replace(/\/$/, "")}/memories`,
-      { user_id: String(userId), messages },
+      { user_id: memoryUserId, messages },
       { headers }
     );
   } catch (err) {
@@ -25,12 +34,16 @@ async function addMemory(userId = 0, messages = []) {
   }
 }
 
-async function searchMemory(userId = 0, query = "", top_k = 5) {
+async function searchMemory(userId = 0, workspaceId = null, query = "", top_k = 5) {
   if (!BASE_URL || !API_KEY) return [];
+  
+  // Use composite ID if workspace is provided, otherwise fallback to user-only
+  const memoryUserId = workspaceId ? createMemoryUserId(userId, workspaceId) : String(userId);
+  
   try {
     const { data } = await axios.post(
       `${BASE_URL.replace(/\/$/, "")}/search`,
-      { user_id: String(userId), query, top_k },
+      { user_id: memoryUserId, query, top_k },
       { headers }
     );
     return data?.matches || [];
@@ -45,4 +58,4 @@ function shouldUseMem0(user) {
   return user?.enable_mem0 !== false;
 }
 
-module.exports = { addMemory, searchMemory, shouldUseMem0 };
+module.exports = { addMemory, searchMemory, shouldUseMem0, createMemoryUserId };

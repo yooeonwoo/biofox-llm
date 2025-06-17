@@ -134,7 +134,7 @@ async function streamChatWithWorkspace(
   // ---- mem0 recall (user-specific) ----
   if (shouldUseMem0(user)) {
     try {
-      const recalls = await searchMemory(user?.id ?? 0, updatedMessage, 5);
+      const recalls = await searchMemory(user?.id ?? 0, workspace?.id, updatedMessage, 5);
       recalls.forEach((r) => {
         if (r?.content) contextTexts.push(r.content);
       });
@@ -285,7 +285,7 @@ async function streamChatWithWorkspace(
 
     // Persist conversational memory to mem0
     if (shouldUseMem0(user)) {
-      addMemory(user?.id ?? 0, [
+      addMemory(user?.id ?? 0, workspace?.id, [
         { role: "user", content: message },
         { role: "assistant", content: completeText },
       ]);
