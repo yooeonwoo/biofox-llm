@@ -23,6 +23,7 @@ const User = {
     "suspended",
     "dailyMessageLimit",
     "bio",
+    "enable_mem0",
   ],
   validations: {
     username: (newValue = "") => {
@@ -69,6 +70,8 @@ const User = {
         return Number(Boolean(value));
       case "dailyMessageLimit":
         return value === null ? null : Number(value);
+      case "enable_mem0":
+        return Boolean(value);
       default:
         return String(value);
     }

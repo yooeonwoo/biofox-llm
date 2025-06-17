@@ -1,5 +1,6 @@
 const { v4: uuidv4 } = require("uuid");
 const { DocumentManager } = require("../DocumentManager");
+const { addMemory, searchMemory, shouldUseMem0 } = require("../memoryProvider");
 const { WorkspaceChats } = require("../../models/workspaceChats");
 const { getVectorDbClass, getLLMProvider } = require("../helpers");
 const { writeResponseChunk } = require("../helpers/chat/responses");
@@ -129,6 +130,18 @@ async function streamChatWithWorkspace(
         });
       });
     });
+
+  // ---- mem0 recall (user-specific) ----
+  if (shouldUseMem0(user)) {
+    try {
+      const recalls = await searchMemory(user?.id ?? 0, updatedMessage, 5);
+      recalls.forEach((r) => {
+        if (r?.content) contextTexts.push(r.content);
+      });
+    } catch (e) {
+      console.error("mem0 recall error", e?.message || e);
+    }
+  }
 
   const vectorSearchResults =
     embeddingsCount !== 0
@@ -269,6 +282,14 @@ async function streamChatWithWorkspace(
       threadId: thread?.id || null,
       user,
     });
+
+    // Persist conversational memory to mem0
+    if (shouldUseMem0(user)) {
+      addMemory(user?.id ?? 0, [
+        { role: "user", content: message },
+        { role: "assistant", content: completeText },
+      ]);
+    }
 
     writeResponseChunk(response, {
       uuid,
