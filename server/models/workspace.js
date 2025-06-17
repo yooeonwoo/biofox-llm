@@ -199,12 +199,11 @@ const Workspace = {
           name: this.validations.name(name),
           ...this.validateFields(additionalFields),
           slug,
+          ownerId: creatorId,
         },
       });
 
       // If created with a user then we need to create the relationship as well.
-      // If creating with an admin User it wont change anything because admins can
-      // view all workspaces anyway.
       if (!!creatorId) await WorkspaceUser.create(creatorId, workspace.id);
       return { workspace, message: null };
     } catch (error) {
@@ -259,18 +258,11 @@ const Workspace = {
   },
 
   getWithUser: async function (user = null, clause = {}) {
-    if ([ROLES.admin, ROLES.manager].includes(user.role))
-      return this.get(clause);
-
     try {
       const workspace = await prisma.workspaces.findFirst({
         where: {
           ...clause,
-          workspace_users: {
-            some: {
-              user_id: user?.id,
-            },
-          },
+          ownerId: user?.id,
         },
         include: {
           workspace_users: true,
@@ -338,18 +330,11 @@ const Workspace = {
     limit = null,
     orderBy = null
   ) {
-    if ([ROLES.admin, ROLES.manager].includes(user.role))
-      return await this.where(clause, limit, orderBy);
-
     try {
       const workspaces = await prisma.workspaces.findMany({
         where: {
           ...clause,
-          workspace_users: {
-            some: {
-              user_id: user.id,
-            },
-          },
+          ownerId: user.id,
         },
         ...(limit !== null ? { take: limit } : {}),
         ...(orderBy !== null ? { orderBy } : {}),

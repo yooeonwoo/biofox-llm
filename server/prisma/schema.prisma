@@ -77,6 +77,7 @@ model users {
   threads                     workspace_threads[]
   recovery_codes              recovery_codes[]
   password_reset_tokens       password_reset_tokens[]
+  owned_workspaces            workspaces[]                  @relation("WorkspaceOwner")
   workspace_agent_invocations workspace_agent_invocations[]
   slash_command_presets       slash_command_presets[]
   browser_extension_api_keys  browser_extension_api_keys[]
@@ -142,6 +143,8 @@ model workspaces {
   agentModel                   String?
   queryRefusalResponse         String?
   vectorSearchMode             String?                        @default("default")
+  ownerId                      Int?
+  owner                        users?                         @relation("WorkspaceOwner", fields: [ownerId], references: [id], onDelete: SetNull)
   workspace_users              workspace_users[]
   documents                    workspace_documents[]
   workspace_suggested_messages workspace_suggested_messages[]
