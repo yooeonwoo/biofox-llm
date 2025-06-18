@@ -23,6 +23,8 @@ async function addMemory(userId = 0, workspaceId = null, messages = []) {
   // Use composite ID if workspace is provided, otherwise fallback to user-only
   const memoryUserId = workspaceId ? createMemoryUserId(userId, workspaceId) : String(userId);
   
+  console.log(`[mem0] addMemory - userId: ${userId}, workspaceId: ${workspaceId}, memoryUserId: ${memoryUserId}`);
+  
   try {
     await axios.post(
       `${BASE_URL.replace(/\/$/, "")}/memories`,
@@ -39,6 +41,8 @@ async function searchMemory(userId = 0, workspaceId = null, query = "", top_k = 
   
   // Use composite ID if workspace is provided, otherwise fallback to user-only
   const memoryUserId = workspaceId ? createMemoryUserId(userId, workspaceId) : String(userId);
+  
+  console.log(`[mem0] searchMemory - userId: ${userId}, workspaceId: ${workspaceId}, memoryUserId: ${memoryUserId}`);
   
   try {
     const { data } = await axios.post(

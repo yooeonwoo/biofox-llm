@@ -199,5 +199,171 @@ class MCPCompatibilityLayer extends MCPHypervisor {
     this.log(`MCP server was killed and removed from config file: ${name}`);
     return { success: true, error: null };
   }
+
+  /**
+   * Add a new MCP server to the config file
+   * @param {string} name - The name of the MCP server
+   * @param {Object} serverConfig - The server configuration
+   * @returns {Promise<{success: boolean, error: string | null, server: Object | null}>}
+   */
+  async addServer(name, serverConfig) {
+    try {
+      // Check if server name already exists
+      const existingServer = this.mcpServerConfigs.find((s) => s.name === name);
+      if (existingServer) {
+        return {
+          success: false,
+          error: `MCP server with name '${name}' already exists.`,
+          server: null,
+        };
+      }
+
+      // Validate server configuration
+      const validation = this.validateServerConfig(serverConfig);
+      if (!validation.valid) {
+        return {
+          success: false,
+          error: validation.error,
+          server: null,
+        };
+      }
+
+      // Add to config file
+      const result = this.addMCPServerToConfig(name, serverConfig);
+      if (!result.success) {
+        return {
+          success: false,
+          error: result.error,
+          server: null,
+        };
+      }
+
+      this.log(`MCP server added to config: ${name}`);
+      return {
+        success: true,
+        error: null,
+        server: { name, config: serverConfig },
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+        server: null,
+      };
+    }
+  }
+
+  /**
+   * Parse Smithery CLI command and convert to MCP server config
+   * @param {string} command - The Smithery CLI command
+   * @returns {Promise<{success: boolean, error: string | null, config: Object | null}>}
+   */
+  async parseSmitheryCommand(command) {
+    try {
+      // Parse npx command: npx -y @smithery/cli@latest install @HelloGGX/shadcn-vue-mcp --client cursor --key a4fd3a4d-c9fd-40f7-8a5f-647cd24b431e
+      const installMatch = command.match(/npx\s+-y\s+@smithery\/cli@latest\s+install\s+([^\s]+)(?:\s+--client\s+([^\s]+))?(?:\s+--key\s+([^\s]+))?/);
+      
+      if (installMatch) {
+        const [, packageName, client, key] = installMatch;
+        const serverName = packageName.split('/').pop().replace(/-mcp$/, '-mcp');
+        
+        const config = {
+          command: "npx",
+          args: [
+            "-y",
+            "@smithery/cli@latest",
+            "run",
+            packageName,
+            "--key",
+            key || "your-key-here"
+          ]
+        };
+
+        return {
+          success: true,
+          error: null,
+          config: {
+            name: serverName,
+            serverConfig: config
+          }
+        };
+      }
+
+      // Also handle direct JSON config
+      try {
+        const jsonConfig = JSON.parse(command);
+        if (jsonConfig.mcpServers) {
+          const serverNames = Object.keys(jsonConfig.mcpServers);
+          if (serverNames.length > 0) {
+            const firstServerName = serverNames[0];
+            const serverConfig = jsonConfig.mcpServers[firstServerName];
+            
+            return {
+              success: true,
+              error: null,
+              config: {
+                name: firstServerName,
+                serverConfig: serverConfig
+              }
+            };
+          }
+        }
+      } catch (jsonError) {
+        // Not JSON, continue with other parsing
+      }
+
+      return {
+        success: false,
+        error: "Unable to parse command. Please provide a valid Smithery CLI install command or JSON configuration.",
+        config: null
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+        config: null
+      };
+    }
+  }
+
+  /**
+   * Validate server configuration
+   * @param {Object} serverConfig - The server configuration to validate
+   * @returns {{valid: boolean, error: string | null}}
+   */
+  validateServerConfig(serverConfig) {
+    if (!serverConfig || typeof serverConfig !== 'object') {
+      return { valid: false, error: "Server configuration must be an object." };
+    }
+
+    // For stdio servers (command-based)
+    if (serverConfig.command) {
+      if (typeof serverConfig.command !== 'string') {
+        return { valid: false, error: "Command must be a string." };
+      }
+      if (serverConfig.args && !Array.isArray(serverConfig.args)) {
+        return { valid: false, error: "Args must be an array." };
+      }
+      if (serverConfig.env && typeof serverConfig.env !== 'object') {
+        return { valid: false, error: "Environment variables must be an object." };
+      }
+      return { valid: true, error: null };
+    }
+
+    // For HTTP servers
+    if (serverConfig.url) {
+      if (typeof serverConfig.url !== 'string') {
+        return { valid: false, error: "URL must be a string." };
+      }
+      try {
+        new URL(serverConfig.url);
+      } catch {
+        return { valid: false, error: "Invalid URL format." };
+      }
+      return { valid: true, error: null };
+    }
+
+    return { valid: false, error: "Server configuration must have either 'command' or 'url' property." };
+  }
 }
 module.exports = MCPCompatibilityLayer;

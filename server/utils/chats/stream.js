@@ -134,10 +134,16 @@ async function streamChatWithWorkspace(
   // ---- mem0 recall (user-specific) ----
   if (shouldUseMem0(user)) {
     try {
-      const recalls = await searchMemory(user?.id ?? 0, workspace?.id, updatedMessage, 5);
+      const recalls = await searchMemory(user?.id ?? 0, workspace?.id, updatedMessage, 10);
       recalls.forEach((r) => {
-        if (r?.content) contextTexts.push(r.content);
+        if (r?.memory) {
+          // Use memory field if available, otherwise use content
+          contextTexts.push(`[User Memory]: ${r.memory}`);
+        } else if (r?.content) {
+          contextTexts.push(`[User Memory]: ${r.content}`);
+        }
       });
+      console.log(`[mem0] Retrieved ${recalls.length} memories for context`);
     } catch (e) {
       console.error("mem0 recall error", e?.message || e);
     }

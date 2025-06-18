@@ -438,6 +438,71 @@ class MCPHypervisor {
     );
     return this.mcpLoadingResults;
   }
+
+  /**
+   * Add a new MCP server to the config file
+   * @param {string} name - The name of the MCP server
+   * @param {Object} serverConfig - The server configuration
+   * @returns {{success: boolean, error: string | null}}
+   */
+  addMCPServerToConfig(name, serverConfig) {
+    try {
+      const currentConfig = safeJsonParse(
+        fs.readFileSync(this.mcpServerJSONPath, "utf8"),
+        { mcpServers: {} }
+      );
+
+      if (!currentConfig.mcpServers) {
+        currentConfig.mcpServers = {};
+      }
+
+      currentConfig.mcpServers[name] = serverConfig;
+
+      fs.writeFileSync(
+        this.mcpServerJSONPath,
+        JSON.stringify(currentConfig, null, 2),
+        { encoding: "utf8" }
+      );
+
+      this.log(`Added MCP server to config: ${name}`);
+      return { success: true, error: null };
+    } catch (error) {
+      this.log(`Failed to add MCP server to config: ${name}`, error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  /**
+   * Remove an MCP server from the config file
+   * @param {string} name - The name of the MCP server to remove
+   * @returns {{success: boolean, error: string | null}}
+   */
+  removeMCPServerFromConfig(name) {
+    try {
+      const currentConfig = safeJsonParse(
+        fs.readFileSync(this.mcpServerJSONPath, "utf8"),
+        { mcpServers: {} }
+      );
+
+      if (currentConfig.mcpServers && currentConfig.mcpServers[name]) {
+        delete currentConfig.mcpServers[name];
+
+        fs.writeFileSync(
+          this.mcpServerJSONPath,
+          JSON.stringify(currentConfig, null, 2),
+          { encoding: "utf8" }
+        );
+
+        this.log(`Removed MCP server from config: ${name}`);
+        return { success: true, error: null };
+      }
+
+      return { success: false, error: `MCP server ${name} not found in config.` };
+    } catch (error) {
+      this.log(`Failed to remove MCP server from config: ${name}`, error);
+      return { success: false, error: error.message };
+    }
+  }
 }
 
 module.exports = MCPHypervisor;

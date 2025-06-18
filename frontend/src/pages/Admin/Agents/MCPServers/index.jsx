@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { titleCase } from "text-case";
-import { BookOpenText, ArrowClockwise } from "@phosphor-icons/react";
+import { BookOpenText, ArrowClockwise, Plus } from "@phosphor-icons/react";
 import MCPLogo from "@/media/agents/mcp-logo.svg";
 import MCPServers from "@/models/mcpServers";
 import showToast from "@/utils/toast";
+import AddMCPServerModal from "./AddMCPServerModal";
 
 export function MCPServerHeader({
   setMcpServers,
@@ -11,6 +12,7 @@ export function MCPServerHeader({
   children,
 }) {
   const [loadingMcpServers, setLoadingMcpServers] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
   useEffect(() => {
     async function fetchMCPServers() {
       setLoadingMcpServers(true);
@@ -44,6 +46,13 @@ export function MCPServerHeader({
     }
   };
 
+  const handleServerAdded = async () => {
+    setLoadingMcpServers(true);
+    const { servers = [] } = await MCPServers.listServers();
+    setMcpServers(servers);
+    setLoadingMcpServers(false);
+  };
+
   return (
     <>
       <div className="text-theme-text-primary flex items-center justify-between gap-x-2 mt-4">
@@ -62,6 +71,14 @@ export function MCPServerHeader({
           </a>
           <button
             type="button"
+            onClick={() => setShowAddModal(true)}
+            className="border-none text-theme-text-secondary hover:text-cta-button flex items-center gap-x-1"
+          >
+            <Plus size={16} />
+            <p className="text-sm">Add Server</p>
+          </button>
+          <button
+            type="button"
             onClick={refreshMCPServers}
             disabled={loadingMcpServers}
             className="border-none text-theme-text-secondary hover:text-cta-button flex items-center gap-x-1"
@@ -77,6 +94,12 @@ export function MCPServerHeader({
         </div>
       </div>
       {children({ loadingMcpServers })}
+      
+      <AddMCPServerModal
+        isOpen={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        onServerAdded={handleServerAdded}
+      />
     </>
   );
 }

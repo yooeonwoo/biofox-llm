@@ -71,6 +71,45 @@ const MCPServers = {
         error: e.message,
       }));
   },
+
+  /**
+   * Create a new MCP server
+   * @param {string} name - The name of the MCP server
+   * @param {Object} serverConfig - The server configuration
+   * @returns {Promise<{success: boolean, error: string | null, server: Object | null}>}
+   */
+  createServer: async (name, serverConfig) => {
+    return await fetch(`${API_BASE}/mcp-servers/create`, {
+      method: "POST",
+      headers: baseHeaders(),
+      body: JSON.stringify({ name, serverConfig }),
+    })
+      .then((res) => res.json())
+      .catch((e) => ({
+        success: false,
+        error: e.message,
+        server: null,
+      }));
+  },
+
+  /**
+   * Parse Smithery CLI command and get server configuration
+   * @param {string} command - The Smithery CLI command or JSON config
+   * @returns {Promise<{success: boolean, error: string | null, config: Object | null}>}
+   */
+  parseSmitheryCommand: async (command) => {
+    return await fetch(`${API_BASE}/mcp-servers/parse-smithery`, {
+      method: "POST",
+      headers: baseHeaders(),
+      body: JSON.stringify({ command }),
+    })
+      .then((res) => res.json())
+      .catch((e) => ({
+        success: false,
+        error: e.message,
+        config: null,
+      }));
+  },
 };
 
 export default MCPServers;

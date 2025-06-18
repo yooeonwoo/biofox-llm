@@ -5,8 +5,8 @@ const WorkspaceAgentInvocation = {
   // returns array of strings with their @ handle.
   // must start with @agent for now.
   parseAgents: function (promptString) {
-    if (!promptString.startsWith("@agent")) return [];
-    return promptString.split(/\s+/).filter((v) => v.startsWith("@"));
+    // Always return @agent to force agent mode for all conversations
+    return ["@agent"];
   },
 
   close: async function (uuid) {

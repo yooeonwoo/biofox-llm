@@ -95,6 +95,50 @@ function mcpServersEndpoints(app) {
       }
     }
   );
+
+  app.post(
+    "/mcp-servers/create",
+    [validatedRequest, flexUserRoleValid([ROLES.admin])],
+    async (request, response) => {
+      try {
+        const { name, serverConfig } = reqBody(request);
+        const result = await new MCPCompatibilityLayer().addServer(name, serverConfig);
+        return response.status(200).json({
+          success: result.success,
+          error: result.error,
+          server: result.server,
+        });
+      } catch (error) {
+        console.error("Error creating MCP server:", error);
+        return response.status(500).json({
+          success: false,
+          error: error.message,
+        });
+      }
+    }
+  );
+
+  app.post(
+    "/mcp-servers/parse-smithery",
+    [validatedRequest, flexUserRoleValid([ROLES.admin])],
+    async (request, response) => {
+      try {
+        const { command } = reqBody(request);
+        const result = await new MCPCompatibilityLayer().parseSmitheryCommand(command);
+        return response.status(200).json({
+          success: result.success,
+          error: result.error,
+          config: result.config,
+        });
+      } catch (error) {
+        console.error("Error parsing Smithery command:", error);
+        return response.status(500).json({
+          success: false,
+          error: error.message,
+        });
+      }
+    }
+  );
 }
 
 module.exports = { mcpServersEndpoints };
